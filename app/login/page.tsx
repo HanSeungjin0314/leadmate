@@ -47,9 +47,9 @@ export default function LoginPage() {
     <div className="login-wrap">
       <div className="login-card">
         <div className="brand-row center">
-          <div className="brand-mark">LM</div>
+          <img className="brand-logo login-logo" src="/leadmate-icon.png" alt="LeadMate" />
           <div>
-            <h1>LeadMate <span className="version-inline">{APP_VERSION}</span></h1>
+            <h1><span className="brand-lead">Lead</span><span className="brand-mate">Mate</span> <span className="version-inline">{APP_VERSION}</span></h1>
             <p>광고 DB부터 재연락·방문·계약까지 놓치지 않게 관리하세요.</p>
           </div>
         </div>

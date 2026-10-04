@@ -18,7 +18,10 @@ button { cursor: pointer; }
 .sidebar { position: sticky; top: 0; height: 100vh; background: var(--sidebar); color: white; padding: 24px 18px; display: flex; flex-direction: column; justify-content: space-between; }
 .brand-row { display: flex; gap: 12px; align-items: center; }
 .brand-row.center { justify-content: center; margin-bottom: 24px; }
-.brand-mark { width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center; background: #2d7cf6; color: white; font-weight: 800; }
+.brand-logo { width: 46px; height: 46px; border-radius: 13px; object-fit: cover; display: block; box-shadow: 0 0 0 1px rgba(67, 137, 255, .28), 0 8px 22px rgba(0, 76, 255, .22); }
+.login-logo { width: 58px; height: 58px; border-radius: 16px; }
+.brand-lead { color: #111827; }
+.brand-mate { background: linear-gradient(135deg, #0f62ff, #22b8ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .version { color: #9aa3b2; font-size: 12px; margin-top: 3px; }
 .version-inline { font-size: 13px; color: var(--primary); vertical-align: middle; }
 .nav-list { display: grid; gap: 8px; margin-top: 28px; }

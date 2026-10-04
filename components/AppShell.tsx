@@ -26,7 +26,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <aside className="sidebar">
         <div>
           <div className="brand-row">
-            <div className="brand-mark">LM</div>
+            <img className="brand-logo" src="/leadmate-icon.png" alt="LeadMate" />
             <div>
               <strong>LeadMate</strong>
               <div className="version">{APP_VERSION}</div>

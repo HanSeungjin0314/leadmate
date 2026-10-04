@@ -1,3 +1,11 @@
+# CHANGELOG
+
+## V1.2
+- LeadMate 프리미엄 LM 로고 적용
+- 로그인 화면, 사이드바, favicon 브랜드 아이콘 통일
+- Vercel production build용 Supabase cookie 타입 오류 수정
+- Supabase DB 스키마 변경 없음
+
 # LeadMate Changelog
 
 ## V1.1 — 2026-10-04
