@@ -24,3 +24,7 @@
 - 웹 브라우저 제목: LeadMate
 - 범용 영업 CRM 메타 설명 적용
 - Supabase migration 추가 없음
+
+
+## V2.2.1 배포 수정
+Vercel 프로덕션 빌드에서 발생한 `settings is possibly null` TypeScript 오류를 수정했습니다. Supabase migration은 없습니다.

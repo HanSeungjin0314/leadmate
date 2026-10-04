@@ -55,7 +55,7 @@ export default function CustomerDetailPage() {
 
   async function saveCustomer(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!customer) return;
+    if (!customer || !settings) return;
     const form = new FormData(e.currentTarget);
     const payload = {
       name: String(form.get("name") || "").trim(),

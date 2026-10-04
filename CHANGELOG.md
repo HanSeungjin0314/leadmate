@@ -1,9 +1,15 @@
+# LeadMate Changelog
+
+## V2.2.1
+- Vercel TypeScript build 오류 수정
+- 고객 상세 저장 시 비즈니스 설정 null 안전성 보강
+- Supabase DB 변경 없음
+
 ## V2.2.0
 - 브라우저/웹 페이지 제목을 `LeadMate V1`에서 `LeadMate`로 변경
 - 메타 설명을 범용 영업 CRM에 맞게 수정
 - Supabase DB 변경 없음
 
-# LeadMate Changelog
 
 ## V2.1
 - 사용자 정의 고객 항목 최대 8개 추가
