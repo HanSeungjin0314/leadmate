@@ -27,7 +27,7 @@ export default function LoginPage() {
         options: { data: { name } }
       });
       if (error) setMessage(error.message);
-      else setMessage("회원가입이 완료되었습니다. 이메일 확인이 켜져 있다면 인증 후 로그인하세요.");
+      else setMessage("회원가입이 완료되었습니다. 로그인 후 내 비즈니스에 맞게 LeadMate를 설정하세요.");
       setLoading(false);
       return;
     }
@@ -50,7 +50,7 @@ export default function LoginPage() {
           <img className="brand-logo login-logo" src="/leadmate-icon.png" alt="LeadMate" />
           <div>
             <h1><span className="brand-lead">Lead</span><span className="brand-mate">Mate</span> <span className="version-inline">{APP_VERSION}</span></h1>
-            <p>광고 DB부터 재연락·방문·계약까지 놓치지 않게 관리하세요.</p>
+            <p>모든 리드를 다음 행동으로 연결하는 맞춤형 영업 CRM</p>
           </div>
         </div>
 

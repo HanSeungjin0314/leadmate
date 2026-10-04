@@ -7,6 +7,7 @@ import StatusBadge from "@/components/StatusBadge";
 import { CUSTOMER_STATUSES } from "@/lib/status";
 import { createClient } from "@/lib/supabase/client";
 import type { Activity, Customer } from "@/lib/types";
+import { useBusinessSettings } from "@/lib/useBusinessSettings";
 
 function toLocalInput(value: string | null) {
   if (!value) return "";
@@ -28,6 +29,7 @@ export default function CustomerDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const id = params.id;
+  const { settings, loading: settingsLoading } = useBusinessSettings();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,7 +97,7 @@ export default function CustomerDetailPage() {
     const { error } = await supabase.from("activities").insert({ customer_id: id, user_id: user.id, type: "call", content: text });
     if (error) return setMessage(error.message);
     setActivityText("");
-    setMessage("상담기록을 추가했습니다.");
+    setMessage("영업 기록을 추가했습니다.");
     await load();
   }
 
@@ -137,7 +139,7 @@ export default function CustomerDetailPage() {
 
   async function deleteCustomer() {
     if (!customer) return;
-    const ok = confirm(`'${customer.name}' 고객을 삭제할까요?\n상담 기록도 함께 삭제되며 이 작업은 되돌릴 수 없습니다.`);
+    const ok = confirm(`'${customer.name}' 고객을 삭제할까요?\n영업 기록도 함께 삭제되며 이 작업은 되돌릴 수 없습니다.`);
     if (!ok) return;
     const supabase = createClient();
     const { error } = await supabase.from("customers").delete().eq("id", id);
@@ -146,15 +148,15 @@ export default function CustomerDetailPage() {
     router.refresh();
   }
 
-  if (loading) return <AppShell><p>불러오는 중...</p></AppShell>;
-  if (!customer) return <AppShell><div className="empty">고객을 찾을 수 없습니다.</div></AppShell>;
+  if (loading || settingsLoading) return <AppShell><p>불러오는 중...</p></AppShell>;
+  if (!customer || !settings) return <AppShell><div className="empty">고객 또는 비즈니스 설정을 찾을 수 없습니다.</div></AppShell>;
 
   return (
     <AppShell>
       <div className="page-head">
         <div>
           <p className="eyebrow">CUSTOMER DETAIL</p>
-          <div className="title-with-badge"><h1>{customer.name}</h1><StatusBadge status={customer.status} /></div>
+          <div className="title-with-badge"><h1>{customer.name}</h1><StatusBadge status={customer.status} label={settings.pipeline_labels[customer.status as keyof typeof settings.pipeline_labels]} /></div>
           <div className="phone-actions">
             <a className="phone-link" href={`tel:${normalizePhone(customer.phone)}`}>{customer.phone}</a>
             <a className="button mini primary" href={`tel:${normalizePhone(customer.phone)}`}>전화 걸기</a>
@@ -170,10 +172,10 @@ export default function CustomerDetailPage() {
           <form onSubmit={saveCustomer} className="form-stack">
             <label>이름 *<input name="name" required defaultValue={customer.name} /></label>
             <label>전화번호 *<input name="phone" required defaultValue={customer.phone} /></label>
-            <label>상태<select name="status" defaultValue={customer.status}>{CUSTOMER_STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}</select></label>
-            <label>현장<input name="project_name" defaultValue={customer.project_name ?? ""} /></label>
-            <label>유입경로<input name="source" defaultValue={customer.source ?? ""} /></label>
-            <label>관심타입<input name="interest_type" defaultValue={customer.interest_type ?? ""} /></label>
+            <label>상태<select name="status" defaultValue={customer.status}>{CUSTOMER_STATUSES.map((s) => <option key={s.value} value={s.value}>{settings.pipeline_labels[s.value]}</option>)}</select></label>
+            <label>{settings.product_label}<input name="project_name" defaultValue={customer.project_name ?? ""} /></label>
+            <label>유입경로<select name="source" defaultValue={customer.source ?? settings.source_options[0]}>{settings.source_options.map((s) => <option key={s}>{s}</option>)}{customer.source && !settings.source_options.includes(customer.source) ? <option>{customer.source}</option> : null}</select></label>
+            <label>{settings.secondary_label}<input name="interest_type" defaultValue={customer.interest_type ?? ""} /></label>
             <label>다음 연락
               <input type="datetime-local" name="next_contact_at" value={nextContactAt} onChange={(e) => setNextContactAt(e.target.value)} />
             </label>
@@ -191,16 +193,16 @@ export default function CustomerDetailPage() {
         </section>
 
         <section className="panel">
-          <h2>상담 기록</h2>
+          <h2>영업 기록</h2>
           <div className="activity-compose">
-            <textarea value={activityText} onChange={(e) => setActivityText(e.target.value)} rows={4} placeholder="통화 내용, 고객 반응, 다음 확인사항을 기록하세요." />
-            <button className="button primary" onClick={addActivity}>상담 기록 추가</button>
+            <textarea value={activityText} onChange={(e) => setActivityText(e.target.value)} rows={4} placeholder="통화/미팅 내용, 고객 반응, 제안 사항, 다음 행동을 기록하세요." />
+            <button className="button primary" onClick={addActivity}>영업 기록 추가</button>
           </div>
           <div className="timeline">
-            {activities.length === 0 ? <div className="empty">아직 상담 기록이 없습니다.</div> : activities.map((a) => (
+            {activities.length === 0 ? <div className="empty">아직 영업 기록이 없습니다.</div> : activities.map((a) => (
               <div key={a.id} className="timeline-item">
                 <div className="timeline-dot" />
-                <div><strong>{a.type === "status_change" ? "상태 변경" : "상담 기록"}</strong><p>{a.content}</p><span>{new Date(a.created_at).toLocaleString("ko-KR")}</span></div>
+                <div><strong>{a.type === "status_change" ? "상태 변경" : "영업 기록"}</strong><p>{a.content}</p><span>{new Date(a.created_at).toLocaleString("ko-KR")}</span></div>
               </div>
             ))}
           </div>

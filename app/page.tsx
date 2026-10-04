@@ -5,6 +5,8 @@ import Link from "next/link";
 import AppShell from "@/components/AppShell";
 import StatusBadge from "@/components/StatusBadge";
 import { createClient } from "@/lib/supabase/client";
+import { getPreset } from "@/lib/business";
+import { useBusinessSettings } from "@/lib/useBusinessSettings";
 import type { Customer } from "@/lib/types";
 
 function isToday(value: string | null) {
@@ -15,26 +17,27 @@ function isToday(value: string | null) {
 }
 
 export default function DashboardPage() {
+  const { settings, loading: settingsLoading } = useBusinessSettings();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function load() {
+    if (settingsLoading || !settings) return;
+    (async () => {
       const supabase = createClient();
       const { data } = await supabase.from("customers").select("*").order("created_at", { ascending: false });
       setCustomers((data as Customer[]) ?? []);
       setLoading(false);
-    }
-    load();
-  }, []);
+    })();
+  }, [settings, settingsLoading]);
 
   const stats = useMemo(() => {
     const now = Date.now();
     return {
       fresh: customers.filter((c) => c.status === "NEW").length,
       callbacks: customers.filter((c) => c.next_contact_at && isToday(c.next_contact_at)).length,
-      visits: customers.filter((c) => c.status === "VISIT_BOOKED" && c.next_contact_at && isToday(c.next_contact_at)).length,
-      stale: customers.filter((c) => now - new Date(c.updated_at).getTime() >= 3 * 24 * 60 * 60 * 1000 && !["CONTRACTED", "REJECTED"].includes(c.status)).length
+      scheduled: customers.filter((c) => ["VISIT_BOOKED", "VISITED"].includes(c.status) && c.next_contact_at && isToday(c.next_contact_at)).length,
+      stale: customers.filter((c) => now - new Date(c.updated_at).getTime() >= 3 * 86400000 && !["CONTRACTED", "REJECTED"].includes(c.status)).length
     };
   }, [customers]);
 
@@ -43,29 +46,36 @@ export default function DashboardPage() {
     .sort((a, b) => new Date(a.next_contact_at!).getTime() - new Date(b.next_contact_at!).getTime())
     .slice(0, 10);
 
+  if (settingsLoading || !settings) return <AppShell><p>내 비즈니스 설정을 불러오는 중...</p></AppShell>;
+  const preset = getPreset(settings.industry);
+
   return (
     <AppShell>
       <div className="page-head">
-        <div><p className="eyebrow">TODAY</p><h1>오늘 관리할 고객</h1><p>재연락과 방문 예정 고객을 먼저 처리하세요.</p></div>
+        <div>
+          <p className="eyebrow">TODAY</p>
+          <h1>오늘의 영업</h1>
+          <p>{settings.business_name ? `${settings.business_name} · ` : ""}놓치면 안 되는 리드와 다음 행동을 확인하세요.</p>
+        </div>
         <Link href="/customers/new" className="button primary">+ 고객 추가</Link>
       </div>
 
       <section className="stat-grid">
-        <div className="stat-card"><span>신규 DB</span><strong>{stats.fresh}</strong></div>
-        <div className="stat-card"><span>오늘 재통화</span><strong>{stats.callbacks}</strong></div>
-        <div className="stat-card"><span>방문예약</span><strong>{stats.visits}</strong></div>
-        <div className="stat-card"><span>3일 이상 미접촉</span><strong>{stats.stale}</strong></div>
+        <div className="stat-card"><span>{preset.dashboard.newLabel}</span><strong>{stats.fresh}</strong></div>
+        <div className="stat-card"><span>{preset.dashboard.actionLabel}</span><strong>{stats.callbacks}</strong></div>
+        <div className="stat-card"><span>{preset.dashboard.scheduleLabel}</span><strong>{stats.scheduled}</strong></div>
+        <div className="stat-card"><span>{preset.dashboard.staleLabel}</span><strong>{stats.stale}</strong></div>
       </section>
 
       <section className="panel">
-        <div className="panel-head"><h2>오늘 재연락</h2><Link href="/customers">전체 고객 보기</Link></div>
-        {loading ? <p>불러오는 중...</p> : todayList.length === 0 ? <div className="empty">오늘 예정된 재연락이 없습니다.</div> : (
+        <div className="panel-head"><h2>오늘 후속 연락</h2><Link href="/customers">전체 고객 보기</Link></div>
+        {loading ? <p>불러오는 중...</p> : todayList.length === 0 ? <div className="empty">오늘 예정된 후속 연락이 없습니다.</div> : (
           <div className="list-table">
             {todayList.map((c) => (
               <Link href={`/customers/${c.id}`} key={c.id} className="customer-row">
                 <div className="time">{new Date(c.next_contact_at!).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}</div>
-                <div className="grow"><strong>{c.name}</strong><span>{c.phone}</span></div>
-                <StatusBadge status={c.status} />
+                <div className="grow"><strong>{c.name}</strong><span>{c.project_name || `${settings.product_label} 미지정`}</span></div>
+                <StatusBadge status={c.status} label={settings.pipeline_labels[c.status as keyof typeof settings.pipeline_labels]} />
               </Link>
             ))}
           </div>
