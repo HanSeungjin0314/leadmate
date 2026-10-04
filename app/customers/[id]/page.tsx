@@ -65,7 +65,8 @@ export default function CustomerDetailPage() {
       source: String(form.get("source") || "").trim() || null,
       interest_type: String(form.get("interest_type") || "").trim() || null,
       memo: String(form.get("memo") || "").trim() || null,
-      next_contact_at: nextContactAt ? new Date(nextContactAt).toISOString() : null
+      next_contact_at: nextContactAt ? new Date(nextContactAt).toISOString() : null,
+      custom_data: Object.fromEntries(settings.custom_fields.map((field) => [field.key, String(form.get(`custom_${field.key}`) || "").trim()]).filter(([, value]) => value))
     };
 
     if (!payload.name || !payload.phone) return setMessage("이름과 전화번호는 필수입니다.");
@@ -176,6 +177,7 @@ export default function CustomerDetailPage() {
             <label>{settings.product_label}<input name="project_name" defaultValue={customer.project_name ?? ""} /></label>
             <label>유입경로<select name="source" defaultValue={customer.source ?? settings.source_options[0]}>{settings.source_options.map((s) => <option key={s}>{s}</option>)}{customer.source && !settings.source_options.includes(customer.source) ? <option>{customer.source}</option> : null}</select></label>
             <label>{settings.secondary_label}<input name="interest_type" defaultValue={customer.interest_type ?? ""} /></label>
+            {settings.custom_fields.map((field) => <label key={field.key}>{field.label}<input name={`custom_${field.key}`} defaultValue={customer.custom_data?.[field.key] ?? ""} placeholder={field.placeholder || `${field.label} 입력`} /></label>)}
             <label>다음 연락
               <input type="datetime-local" name="next_contact_at" value={nextContactAt} onChange={(e) => setNextContactAt(e.target.value)} />
             </label>

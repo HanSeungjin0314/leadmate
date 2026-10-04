@@ -20,6 +20,11 @@ export default function NewCustomerPage() {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setError("로그인이 필요합니다."); setSaving(false); return; }
+    const customData: Record<string,string> = {};
+    settings.custom_fields.forEach((field)=>{
+      const value = String(form.get(`custom_${field.key}`) || "").trim();
+      if (value) customData[field.key] = value;
+    });
     const payload = {
       user_id: user.id,
       business_id: settings.business_id,
@@ -29,6 +34,7 @@ export default function NewCustomerPage() {
       source: String(form.get("source") || "").trim() || null,
       interest_type: String(form.get("interest_type") || "").trim() || null,
       memo: String(form.get("memo") || "").trim() || null,
+      custom_data: customData,
       status: "NEW"
     };
     const { data, error } = await supabase.from("customers").insert(payload).select("id").single();
@@ -45,6 +51,7 @@ export default function NewCustomerPage() {
       <label>{settings.product_label}<input name="project_name" placeholder={`${settings.product_label} 입력`} /></label>
       <label>유입경로<select name="source" defaultValue={settings.source_options[0] || "기타"}>{settings.source_options.map((s)=><option key={s}>{s}</option>)}</select></label>
       <label>{settings.secondary_label}<input name="interest_type" placeholder={`${settings.secondary_label} 입력`} /></label>
+      {settings.custom_fields.map((field)=><label key={field.key}>{field.label}<input name={`custom_${field.key}`} placeholder={field.placeholder || `${field.label} 입력`} /></label>)}
       <label className="full-span">메모<textarea name="memo" rows={5} placeholder="고객 상황, 니즈, 제안 내용, 다음 확인사항을 기록하세요." /></label>
       {error && <p className="notice error full-span">{error}</p>}
       <div className="form-actions full-span"><button type="button" className="button ghost" onClick={() => router.back()}>취소</button><button className="button primary" disabled={saving}>{saving ? "저장 중..." : "고객 저장"}</button></div>

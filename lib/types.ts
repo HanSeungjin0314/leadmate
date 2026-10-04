@@ -4,12 +4,13 @@ export type Customer = {
   business_id: string | null;
   name: string;
   phone: string;
-  project_name: string | null; // V2 UI에서는 업종별 '관심 상품/서비스' 라벨로 사용
+  project_name: string | null;
   source: string | null;
-  interest_type: string | null; // V2 UI에서는 업종별 보조 필드 라벨로 사용
+  interest_type: string | null;
   status: string;
   memo: string | null;
   next_contact_at: string | null;
+  custom_data: Record<string, string> | null;
   created_at: string;
   updated_at: string;
 };

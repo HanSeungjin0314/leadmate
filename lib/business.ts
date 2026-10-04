@@ -2,6 +2,7 @@ import type { CustomerStatus } from "@/lib/status";
 
 export type IndustryCode = "real_estate" | "insurance" | "automotive" | "medical" | "education" | "b2b" | "retail" | "other";
 export type UsageMode = "solo" | "team";
+export type CustomField = { key: string; label: string; placeholder?: string };
 
 export type BusinessPreset = {
   code: IndustryCode;
@@ -57,12 +58,16 @@ export type BusinessSettings = {
   secondary_label: string;
   source_options: string[];
   pipeline_labels: Record<CustomerStatus, string>;
+  custom_fields: CustomField[];
   onboarding_completed: boolean;
 };
 
 export function normalizeSettings(row: any): BusinessSettings | null {
   if (!row) return null;
   const preset = getPreset(row.industry);
+  const customFields = Array.isArray(row.custom_fields)
+    ? row.custom_fields.filter((f: any) => f && typeof f.key === "string" && typeof f.label === "string")
+    : [];
   return {
     business_id: row.business_id,
     industry: (row.industry ?? "other") as IndustryCode,
@@ -72,6 +77,7 @@ export function normalizeSettings(row: any): BusinessSettings | null {
     secondary_label: row.secondary_label || preset.secondaryLabel,
     source_options: Array.isArray(row.source_options) && row.source_options.length ? row.source_options : preset.sourceOptions,
     pipeline_labels: { ...preset.pipelineLabels, ...(row.pipeline_labels || {}) },
+    custom_fields: customFields,
     onboarding_completed: Boolean(row.onboarding_completed)
   };
 }

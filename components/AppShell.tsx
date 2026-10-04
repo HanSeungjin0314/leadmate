@@ -12,6 +12,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const nav = [
     { href: "/", label: "홈" },
     { href: "/customers", label: "고객" },
+    { href: "/analytics", label: "통계" },
     { href: "/settings", label: "설정" }
   ];
   return <div className="app-shell">
